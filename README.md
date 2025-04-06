@@ -39,6 +39,8 @@ goal500.plot_cumulative_goals(dados, output_file="gols_acumulados.png")
 goal500.create_animation(dados, output_file="animacao_gols.gif")
 ```
 
+![](images/cumulative_goals.gif)
+
 ### Via linha de comando
 
 ```bash
