@@ -126,6 +126,7 @@ year,total,type,name
 2022,33,club,Robert Lewandowski
 2023,26,club,Robert Lewandowski
 2024,42,club,Robert Lewandowski
+2025,0,club,Robert Lewandowski
 2008,2,international,Robert Lewandowski
 2009,1,international,Robert Lewandowski
 2010,6,international,Robert Lewandowski
@@ -189,7 +190,7 @@ year,total,type,name
 2021,29,club,Erling Haaland
 2022,52,club,Erling Haaland
 2023,38,club,Erling Haaland
-2024,31,club,Erling Haaland
+2024,33,club,Erling Haaland
 2019,0,international,Erling Haaland
 2020,6,international,Erling Haaland
 2021,6,international,Erling Haaland
@@ -210,6 +211,7 @@ year,total,type,name
 2022,41,club,Kylian Mbappé
 2023,44,club,Kylian Mbappé
 2024,43,club,Kylian Mbappé
+2025,0,club,Kylian Mbappé
 2017,1,international,Kylian Mbappé
 2018,9,international,Kylian Mbappé
 2019,3,international,Kylian Mbappé
@@ -237,7 +239,8 @@ year,total,type,name
 2012,0,club,Harry Kane
 2012,2,club,Harry Kane
 2023,44,club,Harry Kane
-2024,39,club,Harry Kane
+2024,41,club,Harry Kane
+2025,0,club,Harry Kane
 2015,3,international,Harry Kane
 2016,2,international,Harry Kane
 2017,7,international,Harry Kane
@@ -271,7 +274,7 @@ year,total,type,name
 2022,8,club,Luis Suárez
 2023,29,club,Luis Suárez
 2024,25,club,Luis Suárez
-2025,8,club,Luis Suárez
+2025,9,club,Luis Suárez
 2007,2,international,Luis Suárez
 2008,4,international,Luis Suárez
 2009,3,international,Luis Suárez
