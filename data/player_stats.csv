@@ -25,6 +25,7 @@ year,total,type,name
 2022,14,club,Cristiano Ronaldo
 2023,50,club,Cristiano Ronaldo
 2024,35,club,Cristiano Ronaldo
+2025,1,club,Cristiano Ronaldo
 2001,1,international,Cristiano Ronaldo
 2001,0,international,Cristiano Ronaldo
 2002,3,international,Cristiano Ronaldo
@@ -212,7 +213,7 @@ year,total,type,name
 2022,41,club,Kylian Mbappé
 2023,44,club,Kylian Mbappé
 2024,44,club,Kylian Mbappé
-2025,0,club,Kylian Mbappé
+2025,3,club,Kylian Mbappé
 2017,1,international,Kylian Mbappé
 2018,9,international,Kylian Mbappé
 2019,3,international,Kylian Mbappé
@@ -241,7 +242,7 @@ year,total,type,name
 2012,2,club,Harry Kane
 2023,44,club,Harry Kane
 2024,41,club,Harry Kane
-2025,1,club,Harry Kane
+2025,4,club,Harry Kane
 2015,3,international,Harry Kane
 2016,2,international,Harry Kane
 2017,7,international,Harry Kane
@@ -275,7 +276,7 @@ year,total,type,name
 2022,8,club,Luis Suárez
 2023,29,club,Luis Suárez
 2024,25,club,Luis Suárez
-2025,11,club,Luis Suárez
+2025,13,club,Luis Suárez
 2007,2,international,Luis Suárez
 2008,4,international,Luis Suárez
 2009,3,international,Luis Suárez
