@@ -1,47 +1,86 @@
-name: Atualizar Dados Semanalmente
+name: Atualizar dados e publicar site
 
 on:
   schedule:
-    # Executa toda segunda-feira às 00:00 UTC
+    # Toda segunda-feira às 00:00 UTC
     - cron: '0 0 * * 1'
-  workflow_dispatch:  # Permite execução manual
+  workflow_dispatch:      # Permite execução manual
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+      - 'goal500/**'
+      - '.github/workflows/update_data.yml'
+
+# Permissões: escrever no repositório (commit dos dados) e publicar no Pages.
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# Evita execuções concorrentes de deploy do Pages.
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
-    
     steps:
       - name: Checkout do repositório
-        uses: actions/checkout@v3
-        
+        uses: actions/checkout@v4
+
       - name: Configurar Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-          
+          cache: pip
+
       - name: Instalar dependências
         run: |
           python -m pip install --upgrade pip
           pip install -e .
-          
+
       - name: Extrair dados atualizados
         run: |
           mkdir -p data
           python -c "import goal500; goal500.get_player_stats().to_csv('data/player_stats.csv', index=False)"
-          
-      - name: Gerar visualização
+
+      - name: Gerar dados da página interativa
+        run: python -m goal500.cli site --input data/player_stats.csv --output docs/data.json
+
+      - name: Gerar visualização estática (PNG)
         run: |
           mkdir -p images
-          python -c "import goal500; import pandas as pd; goal500.plot_cumulative_goals(pd.read_csv('data/player_stats.csv'), 'images/cumulative_goals.png')"
-          
-      - name: Gerar animação
-        run: |
-          python -c "import goal500; import pandas as pd; goal500.create_animation(pd.read_csv('data/player_stats.csv'), 'images/cumulative_goals.gif')"
-          
+          python -c "import goal500, pandas as pd; goal500.plot_cumulative_goals(pd.read_csv('data/player_stats.csv'), 'images/cumulative_goals.png')"
+
+      - name: Gerar animação (GIF)
+        run: python -c "import goal500, pandas as pd; goal500.create_animation(pd.read_csv('data/player_stats.csv'), 'images/cumulative_goals.gif')"
+
       - name: Commit e push das alterações
         run: |
-          git config --local user.name "GitHub Actions Bot"
-          git config --local user.email "actions@github.com"
-          git add data/player_stats.csv images/cumulative_goals.png images/cumulative_goals.gif
-          git commit -m "Atualização semanal de dados [skip ci]" || echo "Sem alterações para commit"
-          git push
+          git config --local user.name "github-actions[bot]"
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/player_stats.csv docs/data.json images/cumulative_goals.png images/cumulative_goals.gif
+          if git diff --staged --quiet; then
+            echo "Sem alterações para commit."
+          else
+            git commit -m "Atualização semanal de dados [skip ci]"
+            git push
+          fi
+
+      - name: Preparar artefato do GitHub Pages
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+
+  deploy:
+    needs: update-data
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Publicar no GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

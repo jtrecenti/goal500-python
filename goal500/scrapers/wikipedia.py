@@ -35,95 +35,108 @@ def get_active_players():
     return pd.DataFrame(players, columns=["name", "link"])
 
 
+def _flatten_columns(table):
+    """Achata cabeçalhos MultiIndex em strings simples e retorna a lista de colunas."""
+    if isinstance(table.columns, pd.MultiIndex):
+        table.columns = [
+            ' '.join(str(item) for item in col if item and str(item).strip())
+            for col in table.columns.values
+        ]
+    return [str(col) for col in table.columns]
+
+
+def _pick_goal_column(cols):
+    """
+    Escolhe a coluna de gols que representa o TOTAL da linha.
+
+    As tabelas da Wikipedia trazem várias colunas de "Goals" (liga, copa,
+    continental...) e uma coluna final "Total Goals" com a soma da temporada/ano.
+    É essa que queremos — daí preferirmos, na ordem: a última "Total Goals",
+    senão a última coluna que contenha "Goals".
+    """
+    total_cols = [c for c in cols if "Total Goals" in c]
+    if total_cols:
+        return total_cols[-1]
+    goal_cols = [c for c in cols if "Goals" in c]
+    return goal_cols[-1] if goal_cols else None
+
+
+def _parse_goals(value):
+    """Converte a célula de gols em inteiro, ignorando marcadores de nota (ex.: '40[h]')."""
+    match = re.search(r"\d+", str(value))
+    return int(match.group()) if match else 0
+
+
+def _extract_rows(table, key_col, goal_col, kind):
+    """
+    Extrai (year, total, type) das linhas de uma tabela.
+
+    Só considera linhas cuja célula-chave (Season/Year) contenha um ano de 4
+    dígitos — assim as linhas de subtotal ("Total", "Career total") são ignoradas.
+    Para temporadas como "2002–03" usa-se o primeiro ano (2002).
+    """
+    rows = []
+    for _, row in table.iterrows():
+        year_match = re.search(r"(\d{4})", str(row[key_col]))
+        if not year_match:
+            continue
+        rows.append({
+            "year": year_match.group(1),
+            "total": _parse_goals(row[goal_col]),
+            "type": kind,
+        })
+    return rows
+
+
 def extract_goals_by_year(url):
     """
-    Extrai os gols por ano de um jogador a partir da sua página na Wikipedia.
-    
-    Essa versão utiliza pd.read_html (com StringIO para evitar warnings) e achata o cabeçalho
-    caso seja MultiIndex.
-    
+    Extrai os gols por ano de um jogador a partir da sua página na Wikipedia (em inglês).
+
+    Usa a tabela "Career statistics": a de clube (coluna "Season") e a de seleção
+    (coluna "Year"), somando sempre a coluna "Total Goals" de cada linha. Os totais
+    resultantes batem com a linha "Career total" da própria página.
+
     Returns:
         pd.DataFrame: DataFrame com as colunas 'year', 'total' e 'type'.
     """
     print(f"Extraindo dados de: {url}")
-    response = requests.get(url, timeout=10)
+    headers = {"User-Agent": "goal500-python/0.1 (https://github.com/jtrecenti/goal500-python)"}
     try:
-        tables = pd.read_html(StringIO(response.text))
-    except ValueError as e:
-        print(f"Erro de valor: {e}")
-        return pd.DataFrame(columns=["year", "total", "type"])
-    except URLError as e:
-        print(f"Erro de rede: {e}")
+        response = requests.get(url, timeout=30, headers=headers)
+        response.raise_for_status()
+        # flavor='lxml' torna o parsing determinístico e evita depender de html5lib.
+        tables = pd.read_html(StringIO(response.text), flavor="lxml")
+    except (ValueError, URLError, requests.RequestException) as e:
+        print(f"Erro ao obter/parsear a página: {e}")
         return pd.DataFrame(columns=["year", "total", "type"])
 
     club_data = []
     international_data = []
+    club_done = False
+    international_done = False
 
     for table in tables:
-        # Se as colunas forem MultiIndex, achata-as
-        if isinstance(table.columns, pd.MultiIndex):
-            table.columns = [
-                ' '.join(
-                    [str(item) for item in col if item and str(item).strip()])
-                for col in table.columns.values
-            ]
-        cols = [str(col) for col in table.columns]
-        # Verifica se a tabela tem estatísticas de clube (presença da coluna "Season")
-        if any("Season" in col for col in cols):
-            season_col = next((col for col in cols if "Season" in col), None)
-            # Procura por uma coluna que contenha "Total Goals" ou, em alternativa, "Goals"
-            goal_col = next((col for col in cols if "Total Goals" in col),
-                            None)
-            if goal_col is None:
-                goal_col = next((col for col in cols if "Goals" in col), None)
+        cols = _flatten_columns(table)
+        goal_col = _pick_goal_column(cols)
+        if goal_col is None:
+            continue
 
-            if season_col and goal_col:
-                for _, row in table.iterrows():
-                    season_text = str(row[season_col])
-                    year_match = re.search(r"(\d{4})", season_text)
-                    if year_match:
-                        year = year_match.group(1)
-                        try:
-                            goals = int(row[goal_col])
-                        except ValueError as e:
-                            print(f"Erro de valor: {e}")
-                            goals = 0
-                        except URLError as e:
-                            print(f"Erro de rede: {e}")
-                            goals = 0
-                        club_data.append({
-                            "year": year,
-                            "total": goals,
-                            "type": "club"
-                        })
+        # Tabela de clube: tem a coluna "Season".
+        if not club_done and any("Season" in col for col in cols):
+            season_col = next(col for col in cols if "Season" in col)
+            club_data = _extract_rows(table, season_col, goal_col, "club")
+            club_done = True
 
-        # Verifica se a tabela tem estatísticas internacionais (colunas "Year" e "Goals")
-        elif any("Year" in col for col in cols) and any("Goals" in col
-                                                        for col in cols):
-            year_col = next((col for col in cols if "Year" in col), None)
-            goal_col = next((col for col in cols if "Goals" in col), None)
-            if year_col and goal_col:
-                for _, row in table.iterrows():
-                    year_text = str(row[year_col])
-                    year_match = re.search(r"(\d{4})", year_text)
-                    if year_match:
-                        year = year_match.group(1)
-                        try:
-                            goals = int(row[goal_col])
-                        except ValueError as e:
-                            print(f"Erro de valor: {e}")
-                            goals = 0
-                        except URLError as e:
-                            print(f"Erro de rede: {e}")
-                            goals = 0
-                        international_data.append({
-                            "year": year,
-                            "total": goals,
-                            "type": "international"
-                        })
+        # Tabela de seleção: tem a coluna "Year" (mas não "Season").
+        elif not international_done and any("Year" in col for col in cols):
+            year_col = next(col for col in cols if "Year" in col)
+            international_data = _extract_rows(table, year_col, goal_col, "international")
+            international_done = True
 
-    all_data = pd.DataFrame(club_data + international_data)
-    return all_data
+        if club_done and international_done:
+            break
+
+    return pd.DataFrame(club_data + international_data)
 
 
 def get_player_stats():

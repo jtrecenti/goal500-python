@@ -2,6 +2,17 @@
 
 Este pacote extrai dados de gols acumulados por ano de jogadores de futebol da Wikipedia.
 
+## 🌐 Página interativa
+
+Uma visualização interativa é publicada automaticamente no GitHub Pages e atualizada toda semana:
+
+**➡️ https://jtrecenti.github.io/goal500-python/**
+
+Nela é possível filtrar por jogador, alternar entre gols de clube/seleção/total, comparar por
+anos de carreira ou por ano-calendário, e ver o ranking rumo à marca dos 500 gols — com tema
+claro/escuro. Os gráficos são gerados no navegador com [ECharts](https://echarts.apache.org/)
+a partir de `docs/data.json`.
+
 ## Instalação
 
 ```bash
@@ -52,6 +63,9 @@ goal500 plot --input dados.csv --output grafico.png
 
 # Gerar visualização animada
 goal500 animate --input dados.csv --output animacao.gif
+
+# Gerar os dados (JSON) da página interativa
+goal500 site --input dados.csv --output docs/data.json
 ```
 
 ## Jogadores incluídos
@@ -71,8 +85,10 @@ O pacote extrai dados dos seguintes jogadores:
 goal500-python/
 ├── goal500/
 │   ├── __init__.py
+│   ├── site.py               # gera docs/data.json p/ a página interativa
 │   ├── cli/
-│   │   └── __init__.py
+│   │   ├── __init__.py
+│   │   └── __main__.py        # permite `python -m goal500.cli`
 │   ├── scrapers/
 │   │   ├── __init__.py
 │   │   └── wikipedia.py
@@ -88,7 +104,10 @@ goal500-python/
 │       ├── test_data_processing.py
 │       ├── test_visualization.py
 │       └── test_cli.py
-├── setup.py
+├── docs/                     # página estática publicada no GitHub Pages
+│   ├── index.html
+│   └── data.json
+├── data/player_stats.csv
 ├── pyproject.toml
 ├── LICENSE
 └── README.md

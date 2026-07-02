@@ -8,6 +8,7 @@ import pandas as pd
 
 from goal500.scrapers.wikipedia import get_player_stats
 from goal500.visualization.plots import plot_cumulative_goals, create_animation
+from goal500.site import write_site_data
 
 
 def main():
@@ -70,12 +71,27 @@ def main():
         default=2
     )
     animate_parser.add_argument(
-        "--duration", 
+        "--duration",
         help="Duração em segundos da pausa no final",
         type=int,
         default=5
     )
-    
+
+    # Comando site
+    site_parser = subparsers.add_parser(
+        "site", help="Gera os dados (JSON) para a página estática interativa"
+    )
+    site_parser.add_argument(
+        "--input", "-i",
+        help="Arquivo CSV com os dados extraídos",
+        default="player_stats.csv"
+    )
+    site_parser.add_argument(
+        "--output", "-o",
+        help="Arquivo JSON de saída consumido pela página",
+        default="docs/data.json"
+    )
+
     args = parser.parse_args()
     
     if args.command == "extract":
@@ -101,7 +117,16 @@ def main():
         except FileNotFoundError:
             print(f"Erro: Arquivo {args.input} não encontrado.")
             sys.exit(1)
-            
+
+    elif args.command == "site":
+        print(f"Gerando dados do site a partir de: {args.input}")
+        try:
+            data = pd.read_csv(args.input)
+            write_site_data(data, args.output)
+        except FileNotFoundError:
+            print(f"Erro: Arquivo {args.input} não encontrado.")
+            sys.exit(1)
+
     else:
         parser.print_help()
         

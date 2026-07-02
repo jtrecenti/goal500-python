@@ -38,9 +38,10 @@ class TestDataProcessing(unittest.TestCase):
         # Testar com dados válidos
         result = clean_data(self.test_data)
         
-        # Verificar se os tipos de dados foram convertidos corretamente
-        self.assertEqual(result["year"].dtype, np.float64)
-        self.assertEqual(result["total"].dtype, np.float64)
+        # Verificar se os tipos de dados foram convertidos para numérico
+        # (valores inteiros válidos viram int64; com NaN viram float64 — ambos numéricos)
+        self.assertTrue(pd.api.types.is_numeric_dtype(result["year"]))
+        self.assertTrue(pd.api.types.is_numeric_dtype(result["total"]))
         
         # Verificar se os valores foram convertidos corretamente
         self.assertEqual(result["year"].iloc[0], 2020)

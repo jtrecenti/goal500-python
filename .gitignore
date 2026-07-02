@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.eggs/
+.venv/
+venv/
+
+# Ferramentas / artefatos temporários
+temp_frames/
+.playwright-mcp/
+.ipynb_checkpoints/
+
+# Artefatos gerados pelos testes
+test_output.csv
+test_plot.png
+test_animation.gif

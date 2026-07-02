@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>goal 500 — a corrida pelos 500 gols</title>
+<meta name="description" content="Visualização interativa dos gols acumulados dos maiores artilheiros em atividade, com dados da Wikipedia." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+<style>
+  :root {
+    --display: "Space Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --sans: system-ui, -apple-system, "Segoe UI", sans-serif;
+
+    /* light */
+    --surface-1: #fcfcfb;
+    --page: #f4f3ef;
+    --card: #ffffff;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --muted: #898781;
+    --grid: #e1e0d9;
+    --baseline: #c3c2b7;
+    --border: rgba(11, 11, 11, 0.10);
+    --shadow: 0 1px 2px rgba(11,11,11,.04), 0 8px 28px rgba(11,11,11,.06);
+    --chip-bg: #ffffff;
+    --chip-off: #f4f3ef;
+    --accent: #eb6834;
+  }
+  html[data-theme="dark"] {
+    --surface-1: #17171a;
+    --page: #0c0c0e;
+    --card: #17171a;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --muted: #8f8e88;
+    --grid: #2a2a2e;
+    --baseline: #3a3a3e;
+    --border: rgba(255, 255, 255, 0.10);
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 12px 40px rgba(0,0,0,.5);
+    --chip-bg: #1f1f24;
+    --chip-off: #141417;
+    --accent: #eb6834;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: var(--sans);
+    background:
+      radial-gradient(1200px 600px at 80% -10%, color-mix(in srgb, var(--accent) 12%, transparent), transparent 60%),
+      var(--page);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 64px; }
+
+  /* ---- Header ---- */
+  header.hero { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; flex-wrap: wrap; margin-bottom: 28px; }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .ball {
+    width: 46px; height: 46px; border-radius: 50%; flex: none;
+    background: conic-gradient(from 20deg, #111 0 12%, #fff 12% 25%, #111 25% 37%, #fff 37% 50%, #111 50% 62%, #fff 62% 75%, #111 75% 87%, #fff 87% 100%);
+    box-shadow: inset 0 0 0 3px rgba(255,255,255,.15), var(--shadow);
+    position: relative;
+  }
+  html[data-theme="dark"] .ball { box-shadow: inset 0 0 0 3px rgba(0,0,0,.35), var(--shadow); }
+  h1 { font-family: var(--display); font-weight: 700; font-size: clamp(28px, 4vw, 42px); letter-spacing: -0.02em; margin: 0; line-height: 1; }
+  h1 .goal { color: var(--accent); }
+  .subtitle { color: var(--text-secondary); margin: 6px 0 0; font-size: 15px; max-width: 46ch; }
+  .meta { text-align: right; font-size: 12.5px; color: var(--muted); }
+  .meta a { color: var(--text-secondary); text-decoration: none; border-bottom: 1px solid var(--border); }
+  .theme-toggle {
+    margin-top: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text-secondary);
+    border-radius: 999px; padding: 7px 14px; font-size: 12.5px; cursor: pointer; font-family: var(--sans);
+    display: inline-flex; align-items: center; gap: 7px; transition: background .15s;
+  }
+  .theme-toggle:hover { background: var(--chip-off); }
+
+  /* ---- KPI tiles ---- */
+  .kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+  .kpi { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .kpi .label { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 8px; }
+  .kpi .value { font-family: var(--display); font-weight: 700; font-size: 30px; line-height: 1; letter-spacing: -0.02em; }
+  .kpi .value small { font-size: 15px; font-weight: 500; color: var(--text-secondary); }
+  .kpi .sub { font-size: 12.5px; color: var(--text-secondary); margin-top: 7px; }
+
+  /* ---- Filters ---- */
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: 18px; margin-bottom: 18px; }
+  .filters-top { display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; }
+  .fgroup .flabel { font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; color: var(--muted); margin-bottom: 9px; }
+  .seg { display: inline-flex; background: var(--chip-off); border: 1px solid var(--border); border-radius: 11px; padding: 3px; gap: 2px; }
+  .seg button {
+    border: 0; background: transparent; color: var(--text-secondary); font-family: var(--sans); font-size: 13px; font-weight: 500;
+    padding: 7px 14px; border-radius: 8px; cursor: pointer; transition: all .15s;
+  }
+  .seg button[aria-pressed="true"] { background: var(--card); color: var(--text-primary); box-shadow: var(--shadow); }
+
+  .players { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--chip-off);
+    color: var(--text-secondary); border-radius: 999px; padding: 7px 13px 7px 10px; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all .15s; user-select: none;
+  }
+  .chip[aria-pressed="true"] { background: var(--chip-bg); color: var(--text-primary); border-color: color-mix(in srgb, var(--chip-color) 55%, var(--border)); box-shadow: var(--shadow); }
+  .chip .dot { width: 11px; height: 11px; border-radius: 50%; background: var(--chip-color); flex: none; opacity: .35; transition: opacity .15s; }
+  .chip[aria-pressed="true"] .dot { opacity: 1; }
+  .chip .tot { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 12px; }
+  .chip[aria-pressed="true"] .tot { color: var(--text-secondary); }
+  .players-actions { display: flex; gap: 10px; margin-left: auto; align-self: center; }
+  .link-btn { background: none; border: 0; color: var(--text-secondary); font-size: 12.5px; cursor: pointer; font-family: var(--sans); border-bottom: 1px solid var(--border); padding: 0 0 1px; }
+  .link-btn:hover { color: var(--text-primary); }
+
+  /* ---- Charts ---- */
+  .chart-card { background: var(--card); border: 1px solid var(--border); border-radius: 18px; box-shadow: var(--shadow); padding: 20px 20px 12px; margin-bottom: 18px; }
+  .chart-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 4px; }
+  .chart-head h2 { font-family: var(--display); font-weight: 600; font-size: 19px; margin: 0; letter-spacing: -0.01em; }
+  .chart-head .hint { font-size: 12.5px; color: var(--muted); }
+  .chart { width: 100%; height: 440px; }
+  .chart.short { height: 380px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+
+  /* ---- Table view ---- */
+  details.tableview { margin-top: 8px; }
+  details.tableview summary { cursor: pointer; color: var(--text-secondary); font-size: 13px; list-style: none; padding: 6px 0; }
+  details.tableview summary::-webkit-details-marker { display: none; }
+  details.tableview summary::before { content: "▸ "; color: var(--muted); }
+  details.tableview[open] summary::before { content: "▾ "; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; margin-top: 10px; }
+  th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--border); font-variant-numeric: tabular-nums; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { color: var(--muted); font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: .05em; }
+
+  footer { margin-top: 34px; text-align: center; color: var(--muted); font-size: 12.5px; line-height: 1.7; }
+  footer a { color: var(--text-secondary); }
+  .loading { text-align: center; color: var(--muted); padding: 80px 0; }
+
+  @media (max-width: 860px) {
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+    .meta { text-align: left; }
+    header.hero { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div>
+      <div class="brand">
+        <div class="ball" aria-hidden="true"></div>
+        <div>
+          <h1><span class="goal">goal</span> 500</h1>
+          <p class="subtitle">A corrida dos maiores artilheiros em atividade rumo à marca dos 500 gols na carreira — gols de clube e seleção somados.</p>
+        </div>
+      </div>
+    </div>
+    <div class="meta">
+      Fonte: <a href="https://en.wikipedia.org" target="_blank" rel="noopener">Wikipedia</a><br />
+      Atualizado em <span id="gen-date">—</span><br />
+      <button class="theme-toggle" id="theme-btn" aria-label="Alternar tema">🌙 Tema</button>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis" aria-live="polite"></section>
+
+  <section class="panel" aria-label="Filtros">
+    <div class="filters-top">
+      <div class="fgroup">
+        <div class="flabel">Tipo de gol</div>
+        <div class="seg" id="seg-type" role="group" aria-label="Tipo de gol">
+          <button data-val="total" aria-pressed="true">Todos</button>
+          <button data-val="club" aria-pressed="false">Clube</button>
+          <button data-val="international" aria-pressed="false">Seleção</button>
+        </div>
+      </div>
+      <div class="fgroup">
+        <div class="flabel">Eixo horizontal</div>
+        <div class="seg" id="seg-x" role="group" aria-label="Eixo horizontal">
+          <button data-val="active" aria-pressed="true">Anos de carreira</button>
+          <button data-val="year" aria-pressed="false">Ano-calendário</button>
+        </div>
+      </div>
+    </div>
+    <div class="players" id="players" role="group" aria-label="Jogadores">
+      <div class="players-actions">
+        <button class="link-btn" id="btn-all">Todos</button>
+        <button class="link-btn" id="btn-none">Nenhum</button>
+      </div>
+    </div>
+  </section>
+
+  <div id="app">
+    <p class="loading">Carregando dados…</p>
+  </div>
+</div>
+
+<script>
+const state = { type: "total", xmode: "active", selected: new Set() };
+let DATA = null;
+let charts = {};
+
+const el = (id) => document.getElementById(id);
+const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const isDark = () => document.documentElement.getAttribute("data-theme") === "dark";
+const pColor = (p) => (isDark() ? (p.color_dark || p.color) : p.color);
+
+/* ---------- data helpers ---------- */
+function seriesValues(p) {
+  if (state.type === "club") return p.club.slice();
+  if (state.type === "international") return p.international.slice();
+  return p.club.map((c, i) => c + p.international[i]);
+}
+function cumulative(vals) {
+  let s = 0; return vals.map((v) => (s += v));
+}
+function playerTotal(p) {
+  if (state.type === "club") return p.total_club;
+  if (state.type === "international") return p.total_international;
+  return p.total;
+}
+function selectedPlayers() {
+  return DATA.players.filter((p) => state.selected.has(p.name));
+}
+
+/* ---------- KPIs ---------- */
+function renderKPIs() {
+  const sel = selectedPlayers();
+  const typeLabel = { total: "clube + seleção", club: "clube", international: "seleção" }[state.type];
+  let total = 0, seasons = 0, top = null;
+  sel.forEach((p) => {
+    const t = playerTotal(p);
+    total += t; seasons += p.years.length;
+    if (!top || t > top.t) top = { name: p.name, t };
+  });
+  const avg = seasons ? (total / seasons) : 0;
+  const lastName = (p) => p.name.split(" ").slice(-1)[0];
+
+  // Quem ainda persegue os 500 (menor distância). Se todos já passaram, marca ✓.
+  const chasers = sel.filter((p) => playerTotal(p) < 500)
+    .sort((a, b) => playerTotal(b) - playerTotal(a));
+  let goalTile;
+  if (!sel.length) {
+    goalTile = { label: "Rumo aos 500", value: "—", sub: "selecione um jogador" };
+  } else if (chasers.length) {
+    const c = chasers[0];
+    goalTile = { label: "Mais perto dos 500", value: `${500 - playerTotal(c)}`, sub: `faltam p/ ${lastName(c)}` };
+  } else {
+    goalTile = { label: "Rumo aos 500", value: "✓", sub: "todos já passaram de 500" };
+  }
+
+  const tiles = [
+    { label: "Gols no filtro", value: total.toLocaleString("pt-BR"), sub: typeLabel },
+    { label: "Artilheiro", value: top ? `${top.t}` : "—", sub: top ? top.name : "selecione um jogador" },
+    { label: "Média por temporada", value: avg.toFixed(1).replace(".", ","), sub: `${sel.length} jogador(es), ${seasons} temporadas` },
+    goalTile,
+  ];
+  el("kpis").innerHTML = tiles.map((t) => `
+    <div class="kpi">
+      <p class="label">${t.label}</p>
+      <div class="value">${t.value}</div>
+      <div class="sub">${t.sub}</div>
+    </div>`).join("");
+}
+
+/* ---------- shared echarts theming ---------- */
+function baseGrid() {
+  return { left: 8, right: 26, top: 18, bottom: 8, containLabel: true };
+}
+function axisCommon() {
+  return {
+    axisLine: { lineStyle: { color: cssVar("--baseline") } },
+    axisTick: { show: false },
+    axisLabel: { color: cssVar("--muted"), fontSize: 12 },
+    splitLine: { lineStyle: { color: cssVar("--grid"), type: [4, 4] } },
+    nameTextStyle: { color: cssVar("--muted"), fontSize: 12, padding: [0, 0, 0, 0] },
+  };
+}
+function tooltipCommon() {
+  return {
+    backgroundColor: cssVar("--card"),
+    borderColor: cssVar("--border"),
+    borderWidth: 1,
+    textStyle: { color: cssVar("--text-primary"), fontSize: 13 },
+    extraCssText: "border-radius:12px;box-shadow:" + cssVar("--shadow") + ";padding:12px 14px;",
+  };
+}
+
+/* ---------- chart 1: cumulative ---------- */
+function optCumulative() {
+  const sel = selectedPlayers();
+  const useYear = state.xmode === "year";
+  const series = sel.map((p) => {
+    const col = pColor(p);
+    const cum = cumulative(seriesValues(p));
+    const data = p.years.map((y, i) => [useYear ? y : (y - p.first_year), cum[i]]);
+    return {
+      name: p.name, type: "line", data,
+      smooth: 0.35, symbol: "circle", symbolSize: 7, showSymbol: false,
+      lineStyle: { width: 2.6, color: col },
+      itemStyle: { color: col, borderColor: cssVar("--surface-1"), borderWidth: 2 },
+      emphasis: { focus: "series", lineStyle: { width: 3.4 } },
+      endLabel: {
+        show: sel.length <= 6, formatter: (o) => o.seriesName.split(" ").slice(-1)[0],
+        color: col, fontSize: 12.5, fontWeight: 600, fontFamily: "Space Grotesk",
+      },
+    };
+  });
+  return {
+    color: sel.map((p) => pColor(p)),
+    grid: { ...baseGrid(), right: state.xmode === "year" ? 70 : 84 },
+    tooltip: {
+      trigger: "axis", ...tooltipCommon(),
+      axisPointer: { type: "line", lineStyle: { color: cssVar("--baseline"), width: 1, type: "solid" } },
+      formatter: (ps) => {
+        if (!ps.length) return "";
+        const head = useYear ? `Ano ${ps[0].axisValue}` : `Ano ${ps[0].axisValue} de carreira`;
+        const rows = ps.slice().sort((a, b) => b.value[1] - a.value[1]).map((p) =>
+          `<div style="display:flex;gap:10px;align-items:center;margin-top:5px">
+             <span style="width:9px;height:9px;border-radius:50%;background:${p.color};display:inline-block"></span>
+             <span style="flex:1">${p.seriesName}</span>
+             <b style="font-variant-numeric:tabular-nums">${p.value[1]}</b></div>`).join("");
+        return `<div style="font-weight:600;margin-bottom:4px">${head}</div>${rows}`;
+      },
+    },
+    xAxis: {
+      type: "value", min: useYear ? "dataMin" : 0, minInterval: 1, ...axisCommon(),
+      axisLabel: { color: cssVar("--muted"), fontSize: 12, formatter: (v) => (useYear ? String(v) : v) },
+    },
+    yAxis: { type: "value", ...axisCommon() },
+    series,
+    animationDuration: 700, animationEasing: "cubicOut",
+  };
+}
+
+/* ---------- chart 2: per season ---------- */
+function optPerSeason() {
+  const sel = selectedPlayers();
+  const useYear = state.xmode === "year";
+  const series = sel.map((p) => {
+    const col = pColor(p);
+    const vals = seriesValues(p);
+    const data = p.years.map((y, i) => [useYear ? y : (y - p.first_year), vals[i]]);
+    return {
+      name: p.name, type: "line", data,
+      smooth: 0.25, symbol: "circle", symbolSize: 6, showSymbol: false,
+      lineStyle: { width: 2, color: col },
+      itemStyle: { color: col, borderColor: cssVar("--surface-1"), borderWidth: 2 },
+      emphasis: { focus: "series", lineStyle: { width: 3 } },
+    };
+  });
+  return {
+    color: sel.map((p) => pColor(p)),
+    grid: baseGrid(),
+    tooltip: {
+      trigger: "axis", ...tooltipCommon(),
+      axisPointer: { type: "line", lineStyle: { color: cssVar("--baseline"), width: 1 } },
+      formatter: (ps) => {
+        if (!ps.length) return "";
+        const head = useYear ? `Ano ${ps[0].axisValue}` : `Ano ${ps[0].axisValue} de carreira`;
+        const rows = ps.slice().sort((a, b) => b.value[1] - a.value[1]).map((p) =>
+          `<div style="display:flex;gap:10px;align-items:center;margin-top:5px">
+             <span style="width:9px;height:9px;border-radius:50%;background:${p.color};display:inline-block"></span>
+             <span style="flex:1">${p.seriesName}</span>
+             <b style="font-variant-numeric:tabular-nums">${p.value[1]}</b></div>`).join("");
+        return `<div style="font-weight:600;margin-bottom:4px">${head}</div>${rows}`;
+      },
+    },
+    xAxis: {
+      type: "value", min: useYear ? "dataMin" : 0, minInterval: 1, ...axisCommon(),
+      axisLabel: { color: cssVar("--muted"), fontSize: 12, formatter: (v) => (useYear ? String(v) : v) },
+    },
+    yAxis: { type: "value", ...axisCommon() },
+    series,
+    animationDuration: 700, animationEasing: "cubicOut",
+  };
+}
+
+/* ---------- chart 3: career totals ranking ---------- */
+function optRanking() {
+  const sel = selectedPlayers().slice().sort((a, b) => playerTotal(a) - playerTotal(b));
+  const names = sel.map((p) => p.name);
+  return {
+    grid: { ...baseGrid(), left: 8, right: 60 },
+    tooltip: {
+      trigger: "item", ...tooltipCommon(),
+      formatter: (o) => {
+        const p = sel.find((x) => x.name === o.name);
+        return `<div style="font-weight:600;margin-bottom:5px">${p.name}</div>
+          <div style="display:flex;gap:14px"><span>Clube</span><b style="margin-left:auto">${p.total_club}</b></div>
+          <div style="display:flex;gap:14px"><span>Seleção</span><b style="margin-left:auto">${p.total_international}</b></div>
+          <div style="display:flex;gap:14px;margin-top:3px;border-top:1px solid ${cssVar("--border")};padding-top:4px"><span>Total</span><b style="margin-left:auto">${p.total}</b></div>`;
+      },
+    },
+    xAxis: { type: "value", ...axisCommon(), splitLine: { lineStyle: { color: cssVar("--grid"), type: [4, 4] } } },
+    yAxis: {
+      type: "category", data: names, ...axisCommon(),
+      axisLabel: { color: cssVar("--text-secondary"), fontSize: 12.5 },
+      splitLine: { show: false },
+    },
+    series: [{
+      type: "bar", barWidth: "58%",
+      data: sel.map((p) => ({ value: playerTotal(p), itemStyle: { color: pColor(p), borderRadius: [0, 5, 5, 0] } })),
+      label: {
+        show: true, position: "right", color: cssVar("--text-secondary"),
+        fontFamily: "Space Grotesk", fontWeight: 600, fontSize: 12.5, formatter: (o) => o.value,
+      },
+      markLine: state.type === "total" ? {
+        symbol: "none", silent: true,
+        lineStyle: { color: cssVar("--accent"), type: "dashed", width: 1.5 },
+        label: { formatter: "500", color: cssVar("--accent"), fontWeight: 600, position: "end" },
+        data: [{ xAxis: 500 }],
+      } : undefined,
+    }],
+    animationDuration: 700, animationEasing: "cubicOut",
+  };
+}
+
+/* ---------- table (accessibility) ---------- */
+function renderTable() {
+  const sel = selectedPlayers().slice().sort((a, b) => b.total - a.total);
+  const rows = sel.map((p) => `<tr>
+    <td>${p.name}</td><td>${p.total_club}</td><td>${p.total_international}</td>
+    <td><b>${p.total}</b></td><td>${p.first_year}–${p.last_year}</td><td>${p.years.length}</td></tr>`).join("");
+  return `<details class="tableview"><summary>Ver dados em tabela</summary>
+    <table><thead><tr><th>Jogador</th><th>Clube</th><th>Seleção</th><th>Total</th><th>Período</th><th>Temporadas</th></tr></thead>
+    <tbody>${rows}</tbody></table></details>`;
+}
+
+/* ---------- app scaffold ---------- */
+function buildApp() {
+  el("app").innerHTML = `
+    <div class="chart-card">
+      <div class="chart-head">
+        <h2>Gols acumulados na carreira</h2>
+        <span class="hint">passe o mouse para comparar • clique na legenda para isolar</span>
+      </div>
+      <div id="chart-cum" class="chart"></div>
+      ${""}
+    </div>
+    <div class="grid-2">
+      <div class="chart-card">
+        <div class="chart-head"><h2>Gols por temporada</h2></div>
+        <div id="chart-season" class="chart short"></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-head"><h2>Ranking de gols</h2><span class="hint">clube + seleção</span></div>
+        <div id="chart-rank" class="chart short"></div>
+        <div id="tablehost"></div>
+      </div>
+    </div>`;
+  charts.cum = echarts.init(el("chart-cum"), null, { renderer: "canvas" });
+  charts.season = echarts.init(el("chart-season"), null, { renderer: "canvas" });
+  charts.rank = echarts.init(el("chart-rank"), null, { renderer: "canvas" });
+  window.addEventListener("resize", () => Object.values(charts).forEach((c) => c.resize()));
+}
+
+function renderAll() {
+  renderKPIs();
+  const sel = selectedPlayers();
+  if (!sel.length) {
+    charts.cum.clear(); charts.season.clear(); charts.rank.clear();
+    charts.cum.setOption({ title: { text: "Selecione ao menos um jogador", left: "center", top: "middle", textStyle: { color: cssVar("--muted"), fontSize: 14, fontWeight: 400 } } });
+    el("tablehost").innerHTML = "";
+    return;
+  }
+  charts.cum.setOption(optCumulative(), true);
+  charts.season.setOption(optPerSeason(), true);
+  charts.rank.setOption(optRanking(), true);
+  el("tablehost").innerHTML = renderTable();
+}
+
+/* ---------- filters wiring ---------- */
+function renderChips() {
+  const host = el("players");
+  const actions = host.querySelector(".players-actions");
+  host.querySelectorAll(".chip").forEach((c) => c.remove());
+  DATA.players.forEach((p) => {
+    const on = state.selected.has(p.name);
+    const b = document.createElement("button");
+    b.className = "chip"; b.setAttribute("aria-pressed", on);
+    b.style.setProperty("--chip-color", pColor(p));
+    b.innerHTML = `<span class="dot"></span>${p.name}<span class="tot">${p.total}</span>`;
+    b.onclick = () => {
+      if (state.selected.has(p.name)) state.selected.delete(p.name);
+      else state.selected.add(p.name);
+      b.setAttribute("aria-pressed", state.selected.has(p.name));
+      renderAll();
+    };
+    host.insertBefore(b, actions);
+  });
+}
+function wireSeg(id, key) {
+  el(id).querySelectorAll("button").forEach((b) => {
+    b.onclick = () => {
+      el(id).querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", "false"));
+      b.setAttribute("aria-pressed", "true");
+      state[key] = b.dataset.val;
+      renderAll();
+    };
+  });
+}
+
+function setTheme(t) {
+  document.documentElement.setAttribute("data-theme", t);
+  localStorage.setItem("goal500-theme", t);
+  el("theme-btn").textContent = t === "dark" ? "☀️ Claro" : "🌙 Escuro";
+  if (DATA && charts.cum) { renderChips(); renderAll(); }
+}
+
+/* ---------- boot ---------- */
+function boot(data) {
+  DATA = data;
+  el("gen-date").textContent = new Date(data.generated_at + "T00:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+  data.players.forEach((p) => state.selected.add(p.name));
+  buildApp();
+  renderChips();
+  wireSeg("seg-type", "type");
+  wireSeg("seg-x", "xmode");
+  el("btn-all").onclick = () => { DATA.players.forEach((p) => state.selected.add(p.name)); renderChips(); renderAll(); };
+  el("btn-none").onclick = () => { state.selected.clear(); renderChips(); renderAll(); };
+  el("theme-btn").onclick = () => setTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  renderAll();
+  document.querySelector(".wrap").insertAdjacentHTML("beforeend",
+    `<footer>Dados extraídos automaticamente da Wikipedia e atualizados semanalmente.<br />
+     Projeto <a href="https://github.com/jtrecenti/goal500-python" target="_blank" rel="noopener">goal500-python</a> · construído com ECharts.</footer>`);
+}
+
+(function init() {
+  const saved = localStorage.getItem("goal500-theme");
+  const sys = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+  setTheme(saved || sys);
+  fetch("data.json", { cache: "no-store" })
+    .then((r) => { if (!r.ok) throw new Error("HTTP " + r.status); return r.json(); })
+    .then(boot)
+    .catch((e) => { el("app").innerHTML = `<p class="loading">Não foi possível carregar os dados (${e.message}).<br />Gere o arquivo com <code>goal500 site</code>.</p>`; });
+})();
+</script>
+</body>
+</html>

@@ -1,15 +1,32 @@
 [project]
-name = "goal500-python"
+name = "goal500"
 version = "0.1.0"
-description = "Add your description here"
+description = "Extrai dados de gols acumulados por ano de jogadores de futebol da Wikipedia e gera visualizações."
 readme = "README.md"
 requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [{ name = "jtrecenti" }]
 dependencies = [
+    "beautifulsoup4>=4.12",
     "bs4>=0.0.2",
     "imageio>=2.37.0",
     "lxml>=5.3.2",
     "matplotlib>=3.10.1",
     "numpy>=2.2.4",
     "pandas>=2.2.3",
+    "pillow>=10.0",
     "requests>=2.32.3",
 ]
+
+[project.urls]
+Homepage = "https://github.com/jtrecenti/goal500-python"
+
+[project.scripts]
+goal500 = "goal500.cli:main"
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["goal500*"]
