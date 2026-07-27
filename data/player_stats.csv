@@ -131,6 +131,7 @@ year,total,type,name
 2023,26,club,Robert Lewandowski
 2024,42,club,Robert Lewandowski
 2025,19,club,Robert Lewandowski
+2026,0,club,Robert Lewandowski
 2008,2,international,Robert Lewandowski
 2009,1,international,Robert Lewandowski
 2010,6,international,Robert Lewandowski
@@ -168,7 +169,7 @@ year,total,type,name
 2023,1,club,Neymar Jr
 2024,0,club,Neymar Jr
 2025,11,club,Neymar Jr
-2026,6,club,Neymar Jr
+2026,8,club,Neymar Jr
 2010,1,international,Neymar Jr
 2011,7,international,Neymar Jr
 2012,9,international,Neymar Jr
@@ -288,7 +289,7 @@ year,total,type,name
 2023,29,club,Luis Suárez
 2024,25,club,Luis Suárez
 2025,17,club,Luis Suárez
-2026,6,club,Luis Suárez
+2026,9,club,Luis Suárez
 2007,2,international,Luis Suárez
 2008,4,international,Luis Suárez
 2009,3,international,Luis Suárez
