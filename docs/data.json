@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-21",
+  "generated_at": "2026-09-28",
   "source": "Wikipedia",
   "players": [
     {
@@ -150,7 +150,7 @@
         11,
         23,
         43,
-        23
+        24
       ],
       "international": [
         0,
@@ -178,9 +178,9 @@
         3,
         10
       ],
-      "total_club": 815,
+      "total_club": 816,
       "total_international": 141,
-      "total": 956,
+      "total": 957,
       "first_year": 2003,
       "last_year": 2026
     },
@@ -270,91 +270,9 @@
       "last_year": 2026
     },
     {
-      "name": "Luis Suárez",
+      "name": "Harry Kane",
       "color": "#008300",
       "color_dark": "#008300",
-      "years": [
-        2005,
-        2006,
-        2007,
-        2008,
-        2009,
-        2010,
-        2011,
-        2012,
-        2013,
-        2014,
-        2015,
-        2016,
-        2017,
-        2018,
-        2019,
-        2020,
-        2021,
-        2022,
-        2023,
-        2024,
-        2025,
-        2026
-      ],
-      "club": [
-        12,
-        15,
-        22,
-        28,
-        49,
-        16,
-        17,
-        30,
-        31,
-        25,
-        59,
-        37,
-        31,
-        25,
-        21,
-        21,
-        13,
-        8,
-        29,
-        25,
-        17,
-        12
-      ],
-      "international": [
-        0,
-        0,
-        2,
-        4,
-        3,
-        7,
-        10,
-        4,
-        9,
-        5,
-        0,
-        3,
-        2,
-        6,
-        4,
-        4,
-        2,
-        3,
-        0,
-        1,
-        0,
-        0
-      ],
-      "total_club": 543,
-      "total_international": 69,
-      "total": 612,
-      "first_year": 2005,
-      "last_year": 2026
-    },
-    {
-      "name": "Harry Kane",
-      "color": "#4a3aa7",
-      "color_dark": "#9085e9",
       "years": [
         2010,
         2011,
@@ -410,18 +328,18 @@
         9,
         7,
         9,
-        7
+        8
       ],
       "total_club": 448,
-      "total_international": 85,
-      "total": 533,
+      "total_international": 86,
+      "total": 534,
       "first_year": 2010,
       "last_year": 2026
     },
     {
       "name": "Neymar Jr",
-      "color": "#e34948",
-      "color_dark": "#e66767",
+      "color": "#4a3aa7",
+      "color_dark": "#9085e9",
       "years": [
         2009,
         2010,
@@ -490,8 +408,8 @@
     },
     {
       "name": "Kylian Mbappé",
-      "color": "#e87ba4",
-      "color_dark": "#d55181",
+      "color": "#e34948",
+      "color_dark": "#e66767",
       "years": [
         2015,
         2016,
@@ -532,18 +450,18 @@
         10,
         2,
         7,
-        11
+        12
       ],
       "total_club": 381,
-      "total_international": 66,
-      "total": 447,
+      "total_international": 67,
+      "total": 448,
       "first_year": 2015,
       "last_year": 2026
     },
     {
       "name": "Erling Haaland",
-      "color": "#eb6834",
-      "color_dark": "#d95926",
+      "color": "#e87ba4",
+      "color_dark": "#d55181",
       "years": [
         2015,
         2016,
@@ -584,11 +502,11 @@
         6,
         11,
         17,
-        7
+        10
       ],
       "total_club": 324,
-      "total_international": 62,
-      "total": 386,
+      "total_international": 65,
+      "total": 389,
       "first_year": 2015,
       "last_year": 2026
     }
