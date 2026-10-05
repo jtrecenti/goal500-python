@@ -83,7 +83,7 @@ year,total,type,name
 2023,11,club,Lionel Messi
 2024,23,club,Lionel Messi
 2025,43,club,Lionel Messi
-2026,24,club,Lionel Messi
+2026,25,club,Lionel Messi
 2004,3,international,Lionel Messi
 2005,11,international,Lionel Messi
 2008,2,international,Lionel Messi
@@ -151,7 +151,7 @@ year,total,type,name
 2023,4,international,Robert Lewandowski
 2024,2,international,Robert Lewandowski
 2025,4,international,Robert Lewandowski
-2026,1,international,Robert Lewandowski
+2026,4,international,Robert Lewandowski
 2009,14,club,Neymar Jr
 2010,42,club,Neymar Jr
 2011,24,club,Neymar Jr
@@ -269,4 +269,4 @@ year,total,type,name
 2023,9,international,Harry Kane
 2024,7,international,Harry Kane
 2025,9,international,Harry Kane
-2026,8,international,Harry Kane
+2026,11,international,Harry Kane
