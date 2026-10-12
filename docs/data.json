@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-05",
+  "generated_at": "2026-10-12",
   "source": "Wikipedia",
   "players": [
     {
@@ -60,7 +60,7 @@
         50,
         35,
         30,
-        3
+        4
       ],
       "international": [
         9,
@@ -90,9 +90,9 @@
         8,
         3
       ],
-      "total_club": 833,
+      "total_club": 834,
       "total_international": 164,
-      "total": 997,
+      "total": 998,
       "first_year": 2001,
       "last_year": 2026
     },
@@ -150,7 +150,7 @@
         11,
         23,
         43,
-        25
+        27
       ],
       "international": [
         0,
@@ -176,11 +176,11 @@
         8,
         6,
         3,
-        10
+        11
       ],
-      "total_club": 817,
-      "total_international": 141,
-      "total": 958,
+      "total_club": 819,
+      "total_international": 142,
+      "total": 961,
       "first_year": 2003,
       "last_year": 2026
     },
@@ -328,11 +328,11 @@
         9,
         7,
         9,
-        11
+        13
       ],
       "total_club": 448,
-      "total_international": 89,
-      "total": 537,
+      "total_international": 91,
+      "total": 539,
       "first_year": 2010,
       "last_year": 2026
     },
@@ -378,7 +378,7 @@
         1,
         0,
         11,
-        8
+        10
       ],
       "international": [
         0,
@@ -400,9 +400,9 @@
         0,
         1
       ],
-      "total_club": 379,
+      "total_club": 381,
       "total_international": 80,
-      "total": 459,
+      "total": 461,
       "first_year": 2009,
       "last_year": 2026
     },
